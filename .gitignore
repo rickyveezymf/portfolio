@@ -1,3 +1,7 @@
 .DS_Store
 .impeccable/
 node_modules/
+
+# Large reference videos stay local
+references/videos/*
+!references/videos/.gitkeep
