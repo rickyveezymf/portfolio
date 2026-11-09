@@ -26,6 +26,12 @@ The note matters more than the image: say **what to take from it** and **what to
 - **Ignore:** unknown, ask owner.
 - **Applies to:** global mood
 
+### Background music (`videos/`)
+- **File / link:** `videos/Website BG Calm.mp3` (2:22), `videos/Website BG CHAOS.mp3` (3:38). Site copies live in `assets/audio/`.
+- **Take:** the site's soundtrack. Calm plays by default, chaos is the alternate. Credits as the owner wants them shown: calm = "The Damned + Aphex Twin, edited", chaos = "Eyeless / Slipknot".
+- **Ignore:** n/a
+- **Applies to:** global (sound button)
+
 ### Links (`links.md`)
 Captured with headless Chrome on 2026-11-08. The owner has not yet said what they like about each one, so these are Claude's reads; confirm with the owner.
 

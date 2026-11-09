@@ -1,4 +1,6 @@
-(() => {
+// Section pages. Registered as a page for nav.js, which mounts it on arrival
+// and aborts `signal` when the visitor moves to another page.
+(window.AVPages ||= {}).section = (signal) => {
   const svgNS = 'http://www.w3.org/2000/svg';
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const section = document.body.dataset.q;
@@ -30,7 +32,7 @@
   }
 
   const statics = [...document.querySelectorAll('.static')];
-  if (statics.length) window.AVStatic.run(statics);
+  if (statics.length) signal.addEventListener('abort', window.AVStatic.run(statics));
 
   ({ film, design, about, misc })[section]?.();
 
@@ -54,6 +56,7 @@
     const start = performance.now();
     let lastFrame = -1;
     (function tick(now) {
+      if (signal.aborted) return;
       const f = Math.floor(((now - start) / 1000) * 24);
       if (f !== lastFrame) {
         lastFrame = f;
@@ -133,7 +136,7 @@
       if (e.target.closest('input, textarea, video, iframe')) return;
       if (e.key === 'ArrowLeft') show(current - 1);
       if (e.key === 'ArrowRight') show(current + 1);
-    });
+    }, { signal });
 
     show(0);
   }
@@ -292,15 +295,23 @@
       timer = null;
     }
 
-    new ResizeObserver(resize).observe(canvas);
+    const sizer = new ResizeObserver(resize);
+    sizer.observe(canvas);
 
-    new IntersectionObserver(([entry]) => {
+    const watcher = new IntersectionObserver(([entry]) => {
       onScreen = entry.isIntersecting;
       if (onScreen && !document.hidden) start(); else stop();
-    }).observe(canvas);
+    });
+    watcher.observe(canvas);
 
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) stop(); else if (onScreen) start();
+    }, { signal });
+
+    signal.addEventListener('abort', () => {
+      stop();
+      sizer.disconnect();
+      watcher.disconnect();
     });
 
     const field = canvas.parentElement;
@@ -331,4 +342,4 @@
       releaseTimer = setTimeout(() => { release(); if (reduceMotion.matches) draw(); }, 1400);
     });
   }
-})();
+};

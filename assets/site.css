@@ -710,9 +710,10 @@ img { display: block; max-width: 100%; }
   height: 100%;
 }
 
+/* Bottom-left: the bottom-right corner belongs to the sound button. */
 .field .hint {
   position: absolute;
-  right: var(--gutter);
+  left: var(--gutter);
   bottom: 20px;
   margin: 0;
 }

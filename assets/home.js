@@ -1,4 +1,6 @@
-(() => {
+// Homepage ring. Registered as a page for nav.js, which mounts it on arrival
+// and aborts `signal` when the visitor moves to another page.
+(window.AVPages ||= {}).home = (signal) => {
   const stage = document.getElementById('stage');
   const ring = document.getElementById('ring');
   const svgNS = 'http://www.w3.org/2000/svg';
@@ -48,6 +50,7 @@
   }
 
   window.AVStatic.draw(staticLines);
+  signal.addEventListener('abort', () => stopStatic());
 
   // ---------- State ----------
   const labels = [...stage.querySelectorAll('.q')];
@@ -87,6 +90,7 @@
   // ---------- Spin ----------
   let last = performance.now();
   function frame(now) {
+    if (signal.aborted) return;
     const dt = Math.min((now - last) / 1000, 0.05);
     last = now;
     const target = active || reduceMotion.matches ? 0 : SPIN;
@@ -142,7 +146,8 @@
       return;
     }
     if (pointerType === 'mouse' || q === active) {
-      window.location.href = stage.querySelector(`.q[data-q="${q}"]`).href;
+      const href = stage.querySelector(`.q[data-q="${q}"]`).href;
+      if (window.AVNav) window.AVNav.go(href); else window.location.href = href;
     } else {
       setActive(q);
     }
@@ -150,7 +155,7 @@
 
   document.addEventListener('click', (e) => {
     if (pointerType !== 'mouse' && !stage.contains(e.target)) setActive(null);
-  });
+  }, { signal });
 
   // ---------- Keyboard ----------
   for (const label of labels) {
@@ -161,4 +166,4 @@
       });
     });
   }
-})();
+};
