@@ -1,0 +1,765 @@
+/* Section pages: film, design, about, miscellaneous. */
+
+:root {
+  --sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --mono: "Courier New", Courier, monospace;
+  --serif: "Times New Roman", Times, serif;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --hair: 1.5px;
+  --gutter: 24px;
+  --bar-h: 76px;
+
+  --ink: #000;
+  --paper: #fff;
+  --dim: #767676; /* 4.5:1 on white */
+}
+
+/* Quarters diagonal from each other share a ground:
+   film and about are black, design and misc are white. */
+:root.ground-black {
+  --ink: #fff;
+  --paper: #000;
+  --dim: #8c8c8c; /* 6.4:1 on black */
+}
+
+* { box-sizing: border-box; }
+
+html {
+  background: var(--paper);
+  color: var(--ink);
+  caret-color: var(--ink);
+  scrollbar-color: var(--ink) var(--paper);
+  scrollbar-width: thin;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  min-height: 100svh;
+  font: 14px/1.4 var(--sans);
+  letter-spacing: 0.01em;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: var(--hair) solid var(--ink);
+  outline-offset: 3px;
+}
+
+img { display: block; max-width: 100%; }
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Data voice: counters, timecode, captions. */
+.data {
+  font: 12px/1.5 var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Page transition ---------- */
+
+@view-transition { navigation: auto; }
+
+::view-transition-group(ring) {
+  animation-duration: 520ms;
+  animation-timing-function: var(--ease-in-out);
+}
+
+/* The room opens: the new page widens as a circle from the quarter that was
+   clicked, over the page you came from. */
+:root { --open-x: 50%; --open-y: 50%; }
+:root[data-q="film"]   { --open-x: calc(50% - 13vmin); --open-y: calc(50% - 13vmin); }
+:root[data-q="misc"]   { --open-x: calc(50% + 13vmin); --open-y: calc(50% - 13vmin); }
+:root[data-q="about"]  { --open-x: calc(50% + 13vmin); --open-y: calc(50% + 13vmin); }
+:root[data-q="design"] { --open-x: calc(50% - 13vmin); --open-y: calc(50% + 13vmin); }
+
+::view-transition-old(root) { animation: none; }
+
+::view-transition-new(root) {
+  animation: room-open 560ms var(--ease-in-out) both;
+}
+
+@keyframes room-open {
+  from { clip-path: circle(0 at var(--open-x) var(--open-y)); }
+  to   { clip-path: circle(150vmax at var(--open-x) var(--open-y)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @view-transition { navigation: none; }
+}
+
+/* ---------- Top bar: four slots across the width ---------- */
+
+.bar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-areas: "home nav datum contact";
+  align-items: center;
+  min-height: var(--bar-h);
+  padding: 0 var(--gutter);
+  background: var(--paper);
+}
+
+.home {
+  grid-area: home;
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* The homepage ring, small, with this section's quarter still lifted. */
+.mini {
+  width: 44px;
+  height: 44px;
+  overflow: visible;
+  view-transition-name: ring;
+  transition: transform 160ms var(--ease-out);
+}
+
+.home:active .mini { transform: scale(0.97); }
+
+.mini .dash {
+  stroke: var(--ink);
+  stroke-width: var(--hair);
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+  transition: transform 220ms var(--ease-out);
+}
+
+.mini .dash.up { transform: translateX(14px); }
+
+.mini .glyph { color: var(--ink); }
+
+@media (hover: hover) and (pointer: fine) {
+  /* The whole ring opens: this way home. */
+  .home:hover .mini .dash { transform: translateX(14px); }
+}
+
+.sections {
+  grid-area: nav;
+  margin: 0;
+}
+
+.sections [aria-current] {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 16px;
+  letter-spacing: 0;
+}
+
+.datum {
+  grid-area: datum;
+  margin: 0;
+}
+
+.contact {
+  grid-area: contact;
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.contact svg {
+  width: 9px;
+  height: 9px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: var(--hair);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .sections a:not([aria-current]):hover,
+  .contact:hover {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+  }
+}
+
+@media (max-width: 720px) {
+  :root { --gutter: 16px; --bar-h: 112px; }
+
+  .bar {
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "home contact"
+      "nav datum";
+    row-gap: 6px;
+    padding-block: 12px;
+    align-content: center;
+  }
+
+  .datum { justify-self: end; }
+}
+
+/* ---------- Registration marks (+) instead of boxes ---------- */
+
+/* A + at a cell's top-right corner. */
+.reg {
+  position: relative;
+}
+
+.reg::before,
+.reg::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: var(--ink);
+  translate: 50% -50%;
+  pointer-events: none;
+}
+
+.reg::before { width: 13px; height: var(--hair); }
+.reg::after  { width: var(--hair); height: 13px; }
+
+/* An SVG overlay that draws marks at a frame's corners. */
+.marks {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: var(--hair);
+}
+
+.marks * { vector-effect: non-scaling-stroke; }
+
+/* ---------- Empty states: the section's icon, idling ---------- */
+
+.idle {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  text-align: center;
+}
+
+.idle svg {
+  width: 72px;
+  height: 72px;
+  overflow: visible;
+}
+
+/* ==================== Film ==================== */
+
+.film main {
+  display: grid;
+  justify-items: center;
+  gap: 22px;
+  padding: 8px var(--gutter) 48px;
+}
+
+/* Sized so the frame, its caption row and the reel strip share one width and
+   all fit the first viewport. */
+.film { --frame-w: min(100%, calc((100svh - var(--bar-h) - 238px) * 16 / 9), 1280px); }
+.film:not(:has(.strip li)) { --frame-w: min(100%, calc((100svh - var(--bar-h) - 108px) * 16 / 9), 1280px); }
+
+/* The picture, then a caption row below it, both inside the corner marks.
+   The bottom HUD row lives in that caption row, off the footage and clear of
+   video controls. */
+.viewfinder {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto 48px;
+  width: var(--frame-w);
+}
+
+.media {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.media > :is(img, video, iframe) {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border: 0;
+}
+
+/* A soft scrim along the top edge keeps the top HUD row readable on footage. */
+.media:has(> :is(img, video, iframe))::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 64px;
+  background: linear-gradient(rgb(0 0 0 / 0.55), rgb(0 0 0 / 0));
+  pointer-events: none;
+}
+
+.hud {
+  position: absolute;
+  inset: 16px 20px;
+  z-index: 1;
+  font-weight: 700; /* Courier's regular weight thins out over footage */
+  display: grid;
+  grid-template:
+    "state tc" auto
+    ".     ." 1fr
+    "title count" auto / minmax(0, 1fr) auto;
+  gap: 8px 24px;
+  color: var(--ink);
+  pointer-events: none;
+}
+
+.hud .marks { inset: -16px -20px; width: calc(100% + 40px); height: calc(100% + 40px); }
+
+@media (max-width: 720px) {
+  /* Empty on a phone, give the camera a taller frame instead of a strip. */
+  .film:not(:has(.strip li)) .media { aspect-ratio: 4 / 5; }
+
+  /* Narrow screens let the credit wrap to two lines rather than lose the role. */
+  .viewfinder { grid-template-rows: auto 64px; }
+  .hud .title { white-space: normal; }
+}
+
+/* The center crosshair only shows over footage; empty, the camera sits there. */
+.film:not(:has(.strip li)) .hud use[href="#cross"] { display: none; }
+
+.state { grid-area: state; display: inline-flex; align-items: center; gap: 8px; }
+
+.state::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: var(--hair) solid currentColor;
+}
+
+.viewfinder.is-playing .state::before { background: currentColor; }
+
+.tc { grid-area: tc; justify-self: end; }
+
+.title {
+  grid-area: title;
+  align-self: end;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.count {
+  grid-area: count;
+  justify-self: end;
+  align-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  pointer-events: auto;
+}
+
+.count button {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin: -8px;
+  transition: transform 160ms var(--ease-out), opacity 160ms ease;
+}
+
+.count button:active { transform: scale(0.9); }
+.count button:disabled { opacity: 0.35; cursor: default; }
+
+.count svg {
+  width: 10px;
+  height: 10px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: var(--hair);
+}
+
+/* Reel strip, as a lookbook's thumbnails. */
+.strip {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 176px;
+  gap: 24px;
+  width: var(--frame-w);
+  margin: 0;
+  padding: 8px 8px 4px 0;
+  list-style: none;
+  overflow-x: auto;
+}
+
+.strip:not(:has(li)) { display: none; }
+
+.strip button {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+}
+
+/* Only the picture dims; captions stay at full ink. */
+.strip img {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  opacity: 0.45;
+  transition: opacity 160ms ease;
+}
+
+.strip button[aria-pressed="true"] img { opacity: 1; }
+
+/* Captions: dim grey (6.4:1 on black) at rest, full ink when selected. */
+.strip button span { color: var(--dim); }
+.strip button[aria-pressed="true"] span { color: var(--ink); }
+
+@media (hover: hover) and (pointer: fine) {
+  .strip button:hover img { opacity: 1; }
+}
+
+/* ==================== Design ==================== */
+
+.design main {
+  display: grid;
+  grid-template-columns: 5fr 7fr;
+  column-gap: clamp(32px, 5vw, 88px);
+  row-gap: 96px;
+  padding: 40px var(--gutter) 96px;
+  align-items: start;
+}
+
+.index {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: clamp(18px, 1.7vw, 26px);
+  font-weight: 500;
+  line-height: 1.1;
+  text-transform: uppercase;
+  letter-spacing: 0;
+}
+
+.index li + li { margin-top: 0.5em; }
+
+.index a {
+  display: inline;
+  padding: 0.04em 0.14em;
+  margin-left: -0.14em;
+  color: var(--dim);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  transition: color 120ms ease, background-color 120ms ease;
+}
+
+.index a.is-active {
+  color: var(--paper);
+  background: var(--ink);
+}
+
+.index-empty { display: none; margin: 0; }
+.index:not(:has(li)) { display: none; }
+.index:not(:has(li)) + .index-empty { display: block; }
+
+.preview {
+  position: sticky;
+  top: calc(var(--bar-h) + 8px);
+  margin: 0;
+}
+
+.preview .frame {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  max-height: calc(100svh - var(--bar-h) - 96px);
+  display: grid;
+  place-items: center;
+}
+
+.preview .frame img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 200ms ease, filter 200ms ease;
+}
+
+.preview .frame img.is-swapping {
+  opacity: 0.5;
+  filter: blur(6px);
+}
+
+.preview figcaption { margin-top: 14px; }
+
+.design .idle,
+.design .preview figcaption:empty { display: none; }
+
+.design:not(:has(.index li)) .idle { display: grid; }
+.design:not(:has(.index li)) .preview img { display: none; }
+
+/* Contact sheet of every project (MSCHF store grid). */
+.sheet {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sheet:not(:has(li)) { display: none; }
+
+.sheet li { padding: 22px 22px 18px; }
+
+.sheet a {
+  display: grid;
+  gap: 10px;
+}
+
+/* Images sit faded until hovered (MSCHF store); captions stay readable. */
+.sheet img {
+  opacity: 0.35;
+  transition: opacity 200ms ease;
+}
+
+.sheet a:focus-visible img { opacity: 1; }
+
+@media (hover: hover) and (pointer: fine) {
+  .sheet a:hover img { opacity: 1; }
+}
+
+.sheet img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+}
+
+@media (max-width: 720px) {
+  .design main { grid-template-columns: 1fr; row-gap: 48px; }
+  .preview { position: static; }
+  .design:has(.index li) .preview { display: none; }
+  .sheet img { opacity: 1; }
+}
+
+/* ==================== About ==================== */
+
+.about main {
+  min-height: calc(100svh - var(--bar-h));
+  display: grid;
+  grid-template-rows: 1fr auto auto;
+  row-gap: 40px;
+  padding: 0 var(--gutter) 28px;
+}
+
+.bio {
+  align-self: center;
+  justify-self: center;
+  display: grid;
+  width: min(100%, 62ch);
+}
+
+/* Versions stack in one cell, so the column holds the tallest one's height. */
+.bio p {
+  grid-area: 1 / 1;
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.55;
+  text-align: justify;
+  hyphens: auto;
+  opacity: 0;
+  filter: blur(4px);
+  visibility: hidden;
+  transition: opacity 220ms ease, filter 220ms ease, visibility 0s 220ms;
+}
+
+.bio p.is-on {
+  opacity: 1;
+  filter: none;
+  visibility: visible;
+  transition: opacity 220ms ease, filter 220ms ease;
+}
+
+/* Justify only once there are enough words to set evenly. */
+.bio p:first-child {
+  text-align: left;
+  text-wrap: pretty;
+}
+
+/* Length slider with Times italic poles (Coleman). */
+.length {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  row-gap: 10px;
+}
+
+.length input {
+  grid-column: 1 / -1;
+  --fill: 0%;
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  height: 20px;
+  margin: 0;
+  background:
+    linear-gradient(var(--ink), var(--ink)) left center / var(--fill) var(--hair) no-repeat,
+    linear-gradient(var(--dim), var(--dim)) center / 100% 1px no-repeat;
+  cursor: pointer;
+}
+
+.length input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--ink);
+  transition: transform 160ms var(--ease-out);
+}
+
+.length input::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--ink);
+  transition: transform 160ms var(--ease-out);
+}
+
+.length input:active::-webkit-slider-thumb { transform: scale(1.25); }
+.length input:active::-moz-range-thumb { transform: scale(1.25); }
+
+.length span {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 16px;
+  letter-spacing: 0;
+}
+
+.length span:last-child { justify-self: end; }
+
+/* Bracketed tags (defect). */
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px 32px;
+  font-weight: 700;
+}
+
+.tags ul {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tags :is(a, span)::before { content: "["; }
+.tags :is(a, span)::after { content: "]"; }
+
+@media (hover: hover) and (pointer: fine) {
+  .tags a:hover { background: var(--ink); color: var(--paper); }
+}
+
+/* ==================== Misc ==================== */
+
+.field {
+  position: relative;
+  height: calc(100svh - var(--bar-h));
+  min-height: 420px;
+}
+
+.field canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.field .hint {
+  position: absolute;
+  right: var(--gutter);
+  bottom: 20px;
+  margin: 0;
+}
+
+@media (hover: hover) and (pointer: fine) { .field .hint .coarse { display: none; } }
+@media not ((hover: hover) and (pointer: fine)) { .field .hint .fine { display: none; } }
+
+.objects {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  margin: 0;
+  padding: 24px var(--gutter) 96px;
+  list-style: none;
+}
+
+.objects:not(:has(li)) { display: none; }
+
+.objects li { padding: 22px 22px 18px; }
+
+.objects a {
+  display: grid;
+  gap: 10px;
+}
+
+/* Images sit faded until hovered (MSCHF store); captions stay readable. */
+.objects img {
+  opacity: 0.35;
+  transition: opacity 200ms ease;
+}
+
+.objects a:focus-visible img { opacity: 1; }
+
+@media (hover: hover) and (pointer: fine) {
+  .objects a:hover img { opacity: 1; }
+}
+
+@media not ((hover: hover) and (pointer: fine)) {
+  .objects img { opacity: 1; }
+}
+
+/* Objects keep their whole silhouette, sitting on the caption's left edge. */
+.objects img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: contain;
+  object-position: left bottom;
+}
+
+.objects-empty { display: none; margin: 0; padding: 24px var(--gutter) 64px; }
+.objects:not(:has(li)) + .objects-empty { display: block; }

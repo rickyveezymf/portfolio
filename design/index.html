@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en" data-q="design">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Design / AV</title>
+  <link rel="stylesheet" href="../assets/icons.css">
+  <link rel="stylesheet" href="../assets/site.css">
+</head>
+<body class="design" data-q="design">
+  <header class="bar">
+    <a class="home" href="../" aria-label="Home">
+      <svg class="mini" viewBox="-78 -78 156 156" aria-hidden="true">
+        <g class="mini-ring"></g>
+        <g class="glyph" transform="scale(1.9)">
+          <g class="lid">
+            <path d="M-13 0 Q0 -10 13 0 Q0 10 -13 0 Z"/>
+            <circle class="fill" r="2.6"/>
+          </g>
+        </g>
+      </svg>
+      <span>av</span>
+    </a>
+    <nav class="sections" aria-label="Sections">
+      <a href="../film/">film</a>, <a href="./" aria-current="page">design</a>, <a href="../about/">about</a>, <a href="../misc/">miscellaneous</a>
+    </nav>
+    <p class="datum data">Index <span class="datum-count">00</span></p>
+    <a class="contact" href="../about/#contact">contact</a>
+  </header>
+
+  <main>
+    <h1 class="sr-only">Design</h1>
+
+    <div>
+      <!--
+        Projects. One <li> per project, in order.
+          href          where the project lives (its own page, a PDF, an external link)
+          data-img      preview image
+          data-year     year
+          data-medium   what it is (poster, identity, type, web...)
+        Example:
+          <li><a href="https://example.com" data-img="images/project.jpg" data-year="2026" data-medium="Poster">Project name</a></li>
+      -->
+      <ol class="index" aria-label="Projects">
+      </ol>
+      <p class="index-empty data">Index empty</p>
+    </div>
+
+    <figure class="preview">
+      <div class="frame">
+        <div class="idle">
+          <svg class="glyph" viewBox="-16 -16 32 32" aria-hidden="true">
+            <g class="lid">
+              <path d="M-13 0 Q0 -10 13 0 Q0 10 -13 0 Z"/>
+              <circle class="fill" r="2.6"/>
+            </g>
+          </svg>
+          <p class="data">Nothing on view yet</p>
+        </div>
+        <svg class="marks" aria-hidden="true">
+          <defs><path id="plus" d="M-7 0 H7 M0 -7 V7"/></defs>
+          <use href="#plus" x="0" y="0"/>
+          <use href="#plus" x="100%" y="0"/>
+          <use href="#plus" x="0" y="100%"/>
+          <use href="#plus" x="100%" y="100%"/>
+        </svg>
+      </div>
+      <figcaption class="data"></figcaption>
+    </figure>
+
+    <ul class="sheet" aria-label="Contact sheet"></ul>
+  </main>
+
+  <script src="../assets/static.js"></script>
+  <script src="../assets/site.js"></script>
+</body>
+</html>

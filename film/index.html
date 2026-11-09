@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en" class="ground-black" data-q="film">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Film / AV</title>
+  <link rel="stylesheet" href="../assets/icons.css">
+  <link rel="stylesheet" href="../assets/site.css">
+</head>
+<body class="film" data-q="film">
+  <header class="bar">
+    <a class="home" href="../" aria-label="Home">
+      <svg class="mini" viewBox="-78 -78 156 156" aria-hidden="true">
+        <g class="mini-ring"></g>
+        <g class="glyph" transform="scale(1.9) translate(0 2.75)">
+          <g class="reel">
+            <circle cx="-7.5" cy="-9.5" r="5"/>
+            <circle class="fill" cx="-7.5" cy="-12.1" r="1.1"/>
+            <circle class="fill" cx="-5.25" cy="-8.2" r="1.1"/>
+            <circle class="fill" cx="-9.75" cy="-8.2" r="1.1"/>
+          </g>
+          <g class="reel">
+            <circle cx="2.5" cy="-9.5" r="5"/>
+            <circle class="fill" cx="2.5" cy="-12.1" r="1.1"/>
+            <circle class="fill" cx="4.75" cy="-8.2" r="1.1"/>
+            <circle class="fill" cx="0.25" cy="-8.2" r="1.1"/>
+          </g>
+          <rect x="-12" y="-4" width="17" height="13"/>
+          <path d="M5 0 L12 -3 L12 8 L5 5 Z"/>
+        </g>
+      </svg>
+      <span>av</span>
+    </a>
+    <nav class="sections" aria-label="Sections">
+      <a href="./" aria-current="page">film</a>, <a href="../design/">design</a>, <a href="../about/">about</a>, <a href="../misc/">miscellaneous</a>
+    </nav>
+    <p class="datum data">Reel <span class="datum-count">00</span></p>
+    <a class="contact" href="../about/#contact">contact</a>
+  </header>
+
+  <main>
+    <h1 class="sr-only">Film</h1>
+
+    <section class="viewfinder" aria-label="Viewer">
+      <div class="media">
+        <div class="idle">
+          <svg class="glyph" viewBox="-16 -16 32 32" aria-hidden="true">
+            <g transform="translate(0 2.75)">
+              <g class="reel">
+                <circle cx="-7.5" cy="-9.5" r="5"/>
+                <circle class="fill" cx="-7.5" cy="-12.1" r="1.1"/>
+                <circle class="fill" cx="-5.25" cy="-8.2" r="1.1"/>
+                <circle class="fill" cx="-9.75" cy="-8.2" r="1.1"/>
+              </g>
+              <g class="reel">
+                <circle cx="2.5" cy="-9.5" r="5"/>
+                <circle class="fill" cx="2.5" cy="-12.1" r="1.1"/>
+                <circle class="fill" cx="4.75" cy="-8.2" r="1.1"/>
+                <circle class="fill" cx="0.25" cy="-8.2" r="1.1"/>
+              </g>
+              <rect x="-12" y="-4" width="17" height="13"/>
+              <path d="M5 0 L12 -3 L12 8 L5 5 Z"/>
+            </g>
+          </svg>
+          <p class="data">No signal</p>
+        </div>
+      </div>
+
+      <div class="hud data">
+        <svg class="marks" aria-hidden="true">
+          <defs>
+            <path id="corner-tl" d="M0 28 V0 H28"/>
+            <path id="corner-tr" d="M-28 0 H0 V28"/>
+            <path id="corner-bl" d="M0 -28 V0 H28"/>
+            <path id="corner-br" d="M-28 0 H0 V-28"/>
+            <path id="cross" d="M-8 0 H8 M0 -8 V8"/>
+          </defs>
+          <use href="#corner-tl" x="0" y="0"/>
+          <use href="#corner-tr" x="100%" y="0"/>
+          <use href="#corner-bl" x="0" y="100%"/>
+          <use href="#corner-br" x="100%" y="100%"/>
+          <use href="#cross" x="50%" y="50%"/>
+        </svg>
+        <span class="state">Stby</span>
+        <span class="tc">00:00:00:00</span>
+        <span class="title">No films posted yet</span>
+        <span class="count">
+          <button type="button" aria-label="Previous film"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M7 1 L3 5 L7 9"/></svg></button>
+          <span class="counter">00 / 00</span>
+          <button type="button" aria-label="Next film"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M3 1 L7 5 L3 9"/></svg></button>
+        </span>
+      </div>
+    </section>
+
+    <!--
+      Films. One <li> per film, in order. The page builds the thumbnail itself.
+        data-title   name of the film
+        data-year    year
+        data-role    your role (writer, director, editor...)
+        data-poster  still image, used for the thumbnail and as the poster
+        data-embed   a YouTube or Vimeo embed URL, or
+        data-video   a video file in this folder
+      Example:
+        <li data-title="Title" data-year="2026" data-role="Writer / Director"
+            data-poster="stills/title.jpg" data-embed="https://player.vimeo.com/video/000000"></li>
+    -->
+    <ol class="strip" aria-label="All films">
+    </ol>
+  </main>
+
+  <script src="../assets/static.js"></script>
+  <script src="../assets/site.js"></script>
+</body>
+</html>

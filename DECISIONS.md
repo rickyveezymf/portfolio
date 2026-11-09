@@ -7,4 +7,22 @@ Running log of design and product decisions, newest first. Add an entry whenever
 
 ## Log
 
-_None yet._
+- **2026-11-08: Section pages live at /film/, /design/, /about/, /misc/ and share one system.** A four-slot top bar (corner ring + "av", comma nav, a Courier data reading, contact). The corner ring is the homepage ring, small, with the current quarter still lifted and that section's animated icon inside. Clicking it goes home. Why: the owner handed over direction; the ring carries the homepage into every page. (Source: digitalsaints top bar)
+- **2026-11-08: Diagonal quarters share a ground.** Film and about are black; design and misc are white. Why: alternating grounds give range without four unrelated sites, and the rule comes from the ring itself.
+- **2026-11-08: Type is the system trio.** Helvetica for words, Courier New for data (counters, timecode, captions), Times italic for the current section in the nav and the slider poles. Why: it is how the references use type (Supreme lookbook Courier, archive.pdf Helvetica, Coleman Times italic). Helvetica itself is still an open question to the owner.
+- **2026-11-08: Registration marks (+) instead of boxes, and empty states show the section's animated icon.** Why: the + marks echo the ring's tick marks (MSCHF store); the icons keep empty pages honest and alive until real work is added. Never fill slots with invented work.
+- **2026-11-08: Per-page compositions.** Film = viewfinder with HUD corners, running timecode and a lookbook counter, plus a thumbnail strip (Utopia World + Supreme lookbook). Design = faded title index with an inverted highlight next to a registered preview, plus a contact sheet (archive.pdf + MSCHF store). About = one justified paragraph with a bio-length slider between Times italic poles, plus bracketed tags (Joe Coleman + defect). Misc = a full-screen ball of glyph static that crowds around the cursor, plus a faded object grid (Ken Carson + MSCHF store).
+- **2026-11-08: The homepage ring shrinks into the corner ring on navigation, and the new page opens as a circle widening from the clicked quarter.** Done with cross-document view transitions, where supported. Why: it shows the visitor where they came from; the quarter opens into its room.
+- **2026-11-08: The top bar's fourth slot is "contact", not a section statement.** The current section is already named, in Times italic, in the comma nav. Why: PRODUCT.md says getting in touch should be effortless for a peer who has just seen something they like, so contact is one click from every page.
+- **2026-11-08: Contact details stay as visible "to come" placeholders until the owner supplies real ones.** Why: no fake links that look live.
+
+- **2026-11-08: The center mark is a Times New Roman asterisk, not a plain dot.** Why: the owner wanted the dot to have more character, with a Times New Roman feel.
+- **2026-11-08: Each section icon animates while it is showing.** Film reels turn. The eye blinks every ~4.5s. The question mark tilts like a curious head and its dot hops (Claude's choice). The misc ball is live static: its scribbled lines redraw about 14 times a second. All of it stops under reduced motion. Why: owner's spec.
+
+- **2026-11-08: Homepage is a dashed circle with a dot in the center, and nothing else.** Why: owner's own concept; it takes priority over every other reference. (Source: AV Drawing)
+- **2026-11-08: Four sections, one per quarter of the circle.** Film = upper-left, misc = upper-right, about = lower-right, design = lower-left. Each label sits at the clockwise end of its quarter (top, right, bottom, left) with a short leader line, in a pinwheel as sketched. (Source: AV Drawing)
+- **2026-11-08: The ring spins slowly while idle and stops when the pointer is over the circle.** Hovering a quarter lifts that quarter's dashes outward, shows its label and swaps the center dot for the section icon. The lifted dashes are whichever ones sit in that screen quarter when the spin stops, so they always line up with the label. Why: owner's spec.
+- **2026-11-08: Section icons follow the key.** Film = movie camera, design = eye, about = question mark, misc = scribble ball (drawn as a clean tangle of ellipses). (Source: AV Drawing key)
+- **2026-11-08: Clean, precise linework, not hand-drawn.** Owner chose a precise finish over a hand-drawn one. Why: the idea comes from the sketch, but the finish is technical.
+- **2026-11-08: Pure black and white palette, no texture.** Why: owner's choice. It also fits the monochrome image references.
+- **2026-11-08: Touch: first tap on a quarter reveals it, second tap enters.** Why: there is no hover on phones, and peeking before entering keeps the reveal.
