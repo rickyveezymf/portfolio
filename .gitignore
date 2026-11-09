@@ -5,3 +5,7 @@ node_modules/
 # Large reference videos stay local
 references/videos/*
 !references/videos/.gitkeep
+
+# Music production files (FL Studio projects) stay local
+*.flp
+Website BG Calm/
