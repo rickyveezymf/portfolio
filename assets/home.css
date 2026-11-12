@@ -18,12 +18,71 @@ body {
   overflow-x: hidden;
 }
 
+::selection {
+  background: var(--ink);
+  color: var(--paper);
+}
+
 main {
   min-height: 100vh;
   min-height: 100svh;
   display: grid;
   place-items: center;
-  padding: 16px;
+  /* Clear of the masthead above and the sound control below. */
+  padding: 76px 16px;
+}
+
+/* ---------- Masthead ---------- */
+
+/* Same height, gutters and voices as the section pages' top bar: the name is
+   set like the current room (Times italic), "contact" like every other page. */
+.masthead {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 1;
+  height: 76px;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+}
+
+.byline {
+  margin: 0;
+  font: inherit;
+}
+
+.byline em {
+  font: italic 16px/1 "Times New Roman", Times, serif;
+  letter-spacing: 0;
+}
+
+.byline:focus { outline: none; }
+
+.masthead .contact {
+  color: inherit;
+  text-decoration: none;
+  padding: 12px 0;
+}
+
+.masthead .contact:focus-visible {
+  outline: 1.5px solid var(--ink);
+  outline-offset: 3px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .masthead .contact:hover {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+  }
+}
+
+@media (max-width: 720px) {
+  .masthead { padding: 0 16px; }
 }
 
 .sr-only {

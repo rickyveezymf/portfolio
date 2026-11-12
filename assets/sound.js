@@ -1,16 +1,18 @@
 // Background music and the sound control in the bottom-right corner.
 // Calm plays on arrival. Hovering the speaker (tapping it on touch) opens a
-// small panel with the drum credit and two options: switch version, and mute.
-// Switching version starts the new one from the top.
+// small panel with the credit and a mute option. With more than one track
+// in TRACKS it also offers a switch, which starts the other from the top.
 // Browsers block sound until the visitor interacts, so if autoplay is
 // refused, the first click, tap or key press anywhere starts it.
 (() => {
   const base = document.currentScript.src;
   const TRACKS = {
     calm:  { src: new URL('audio/calm.mp3', base).href,  credit: 'The Damned + Aphex Twin, edited' },
-    chaos: { src: new URL('audio/chaos.mp3', base).href, credit: 'Eyeless / Slipknot' },
+    // Taken off the site after testing; the file stays in assets/audio.
+    // Uncomment to bring back the [chaos] option.
+    // chaos: { src: new URL('audio/chaos.mp3', base).href, credit: 'Eyeless / Slipknot' },
   };
-  const OTHER = { calm: 'chaos', chaos: 'calm' };
+  const otherThan = (name) => Object.keys(TRACKS).find((n) => n !== name);
   const VOLUME = 0.7;
   const FADE_IN = 1200;  // first arrival
   const RESUME = 250;    // carrying on after moving between pages
@@ -75,12 +77,15 @@
   function render() {
     const waiting = !muted && !unlocked;
     const t = TRACKS[track];
-    const other = TRACKS[OTHER[track]];
+    const other = otherThan(track);
     sound.dataset.icon = muted ? 'off' : track;
     sound.classList.toggle('is-waiting', waiting);
     credit.textContent = muted ? 'Muted' : t.credit;
-    swapButton.textContent = OTHER[track];
-    swapButton.setAttribute('aria-label', `Play ${OTHER[track]} version: ${other.credit}`);
+    swapButton.hidden = !other;
+    if (other) {
+      swapButton.textContent = other;
+      swapButton.setAttribute('aria-label', `Play ${other} version: ${TRACKS[other].credit}`);
+    }
     muteButton.textContent = muted ? 'Unmute' : 'Mute';
     if (canHover.matches) {
       icon.removeAttribute('aria-expanded');
@@ -145,7 +150,8 @@
 
   // ---------- Actions ----------
   swapButton.addEventListener('click', () => {
-    track = OTHER[track];
+    if (!otherThan(track)) return;
+    track = otherThan(track);
     muted = false;
     players[track].currentTime = 0;
     apply();
