@@ -65,6 +65,12 @@
           </svg>
           <p class="data">No signal</p>
         </div>
+        <!-- Center mark: nothing at rest, a play cue on hover, a turning ring
+             while the film loads. -->
+        <svg class="cue" viewBox="-12 -12 24 24" aria-hidden="true">
+          <path class="cue-play" d="M-5 -7.5 L9 0 L-5 7.5 Z"/>
+          <circle class="cue-ring" r="9"/>
+        </svg>
       </div>
 
       <div class="hud data">
@@ -82,30 +88,55 @@
           <use href="#corner-br" x="100%" y="100%"/>
           <use href="#cross" x="50%" y="50%"/>
         </svg>
-        <span class="state">Stby</span>
-        <span class="tc">00:00:00:00</span>
-        <span class="title">No films posted yet</span>
-        <span class="count">
-          <button type="button" aria-label="Previous film"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M7 1 L3 5 L7 9"/></svg></button>
-          <span class="counter">00 / 00</span>
-          <button type="button" aria-label="Next film"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M3 1 L7 5 L3 9"/></svg></button>
+        <span class="caption">
+          <span class="title">No films posted yet</span>
+          <button type="button" class="play" hidden><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M2.5 1.5 L8.5 5 L2.5 8.5 Z"/></svg>Play<span class="play-length"></span></button>
         </span>
+        <span class="transport">
+          <button type="button" class="t-play" aria-label="Pause"><svg viewBox="0 0 10 10" aria-hidden="true"><path class="i-pause" d="M3 1.5 V8.5 M7 1.5 V8.5"/><path class="i-play" d="M2.5 1.5 L8.5 5 L2.5 8.5 Z"/></svg></button>
+          <span class="t-time"><span class="t-now">00:00</span><span class="t-total"> / 00:00</span></span>
+          <button type="button" class="t-mute" aria-label="Mute film"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M1 3.8 H3 L5.5 1.5 V8.5 L3 6.2 H1 Z"/><path class="i-on" d="M7 3.4 Q8.2 5 7 6.6"/><path class="i-off" d="M7 3.8 L9.2 6.2 M9.2 3.8 L7 6.2"/></svg></button>
+          <button type="button" class="t-full" aria-label="Full screen"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M1 3.5 V1 H3.5 M6.5 1 H9 V3.5 M9 6.5 V9 H6.5 M3.5 9 H1 V6.5"/></svg></button>
+          <button type="button" class="t-close" aria-label="Close film, back to stills"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M2 2 L8 8 M8 2 L2 8"/></svg></button>
+        </span>
+        <span class="count">
+          <button type="button" aria-label="Previous still"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M7 1 L3 5 L7 9"/></svg></button>
+          <span class="counter">00 / 00</span>
+          <button type="button" aria-label="Next still"><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M3 1 L7 5 L3 9"/></svg></button>
+        </span>
+      </div>
+
+      <div class="scrub">
+        <input type="range" min="0" max="0" step="1" value="0" aria-label="Seek">
       </div>
     </section>
 
     <!--
-      Films. One <li> per film, in order. The page builds the thumbnail itself.
+      Films. One <li> per film, in order; the first is shown on arrival.
+      Its <img> tags are the stills, in order: the arrows step through them
+      and the first one is the film's thumbnail in the strip below.
         data-title   name of the film
         data-year    year
         data-role    your role (writer, director, editor...)
-        data-poster  still image, used for the thumbnail and as the poster
         data-embed   a YouTube or Vimeo embed URL, or
         data-video   a video file in this folder
+        data-length  running time, e.g. 4:27 (shown next to Play)
+      Either source adds Play to the caption and makes the stills clickable.
       Example:
         <li data-title="Title" data-year="2026" data-role="Writer / Director"
-            data-poster="stills/title.jpg" data-embed="https://player.vimeo.com/video/000000"></li>
+            data-embed="https://player.vimeo.com/video/000000">
+          <img src="stills/title-01.jpg" alt="What the still shows">
+          <img src="stills/title-02.jpg" alt="What the still shows">
+        </li>
     -->
     <ol class="strip" aria-label="All films">
+      <li data-title="Red and White" data-video="films/red-and-white/film.mp4" data-length="04:27">
+        <img src="films/red-and-white/stills/01.jpg" alt="A man in a white shirt sits on a wooden block in an empty warehouse, painting red onto a canvas on an easel">
+        <img src="films/red-and-white/stills/02.jpg" alt="A woman in silhouette against a pale blue backdrop, one arm raised, holding something small">
+        <img src="films/red-and-white/stills/03.jpg" alt="A man bends over by wooden racks while a canvas smeared with red stands on an easel across the plastic-covered floor">
+        <img src="films/red-and-white/stills/04.jpg" alt="A figure in black stands in shadow among stage lights and ladders, facing a canvas streaked with red">
+        <img src="films/red-and-white/stills/05.jpg" alt="Over the shoulder, a man presses red paint onto a canvas">
+      </li>
     </ol>
   </main>
 

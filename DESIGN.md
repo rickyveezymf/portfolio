@@ -119,7 +119,6 @@ Two values and one grey per ground. The grounds swap, the roles stay.
 
 **The Inversion Rule.** Emphasis is a swap, not a new color: the active design index title and a hovered about tag become paper on an ink block. There is no accent color.
 
-**The Footage Exception.** The only non-flat value in the system is a top-edge scrim (`rgb(0 0 0 / 0.55)` fading to clear, 64px) that appears only when film footage is loaded, so the HUD stays legible. It never appears on an empty frame.
 
 ## Typography
 
@@ -136,7 +135,7 @@ Two values and one grey per ground. The grounds swap, the roles stay.
 - **Body Long** (400, 17px, 1.55, max 62ch, justified): the about paragraph. The shortest version stays ragged-left, because a single sentence cannot justify evenly.
 - **Body** (400, 14px, 1.4, +0.01em): the top bar's "av", comma nav and contact link, and default running text.
 - **Label** (400, 13px, 1, +0.02em): homepage quarter labels. 15px at 900px and wider, 12px at 560px and narrower.
-- **Data** (Courier New, 400, 12px, 1.5, +0.04em, uppercase, tabular numbers): counters, timecode, captions, empty-state readings, the datum slot, tags, the misc hint. Bold (700) only in the film HUD over footage, where regular Courier thins out.
+- **Data** (Courier New, 400, 12px, 1.5, +0.04em, uppercase, tabular numbers): counters, captions, empty-state readings, the datum slot, tags, the misc hint. Bold (700) only in the film HUD over footage, where regular Courier thins out.
 - **Aside** (Times New Roman italic, 16px, 0 tracking): the current section in the comma nav and the bio slider's poles ("In brief" / "At length").
 - **Mark** (Times New Roman, upright): the homepage center asterisk, set in the ring's SVG and nudged down onto the true center.
 
@@ -219,7 +218,7 @@ Focus is a 1.5px ink outline at a 3px offset (2px on homepage labels). Pressable
 - **Do** keep contact in the top bar's fourth slot on every section page.
 
 ### Don't:
-- **Don't** add a color, an accent, a gradient or a texture. The footage scrim is the only exception.
+- **Don't** add a color, an accent, a gradient or a texture.
 - **Don't** use shadows, rounded corners or bordered cards.
 - **Don't** add a fourth typeface, or set type large for display. The ring is the display.
 - **Don't** fill an empty slot with sample, placeholder or invented work, press or credits.

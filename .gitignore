@@ -9,3 +9,6 @@ references/videos/*
 # Music production files (FL Studio projects) stay local
 *.flp
 Website BG Calm/
+
+# Film masters and raw stills stay local; the site uses the web copies
+film/films/*/source/

@@ -296,9 +296,10 @@ img { display: block; max-width: 100%; }
    The bottom HUD row lives in that caption row, off the footage and clear of
    video controls. */
 .viewfinder {
+  --cap-h: 48px;
   position: relative;
   display: grid;
-  grid-template-rows: auto 48px;
+  grid-template-rows: auto var(--cap-h);
   width: var(--frame-w);
 }
 
@@ -315,18 +316,114 @@ img { display: block; max-width: 100%; }
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
   border: 0;
 }
 
-/* A soft scrim along the top edge keeps the top HUD row readable on footage. */
-.media:has(> :is(img, video, iframe))::after {
-  content: "";
+/* Stills and footage keep their own frame (scope, 4:3...) and letterbox on
+   the black ground instead of being cropped to 16:9. */
+.media > :is(img, video) { object-fit: contain; }
+
+.film:has(.strip li) .idle { display: none; }
+
+.shot {
+  transition: opacity 220ms var(--ease-out), filter 220ms var(--ease-out);
+}
+
+.shot.is-entering {
+  opacity: 0;
+  filter: blur(4px);
+}
+
+/* Center cue: empty at rest, so the still is clean. Hovering a playable
+   still shows a play mark, and loading shows a turning ring. It inverts
+   against the still so it reads on light and dark alike. */
+.cue {
   position: absolute;
-  inset: 0 0 auto;
-  height: 64px;
-  background: linear-gradient(rgb(0 0 0 / 0.55), rgb(0 0 0 / 0));
+  inset: 0;
+  z-index: 2;
+  width: 24px;
+  height: 24px;
+  margin: auto;
+  overflow: visible;
   pointer-events: none;
+  color: #fff;
+  mix-blend-mode: difference;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: var(--hair);
+}
+
+.cue * {
+  vector-effect: non-scaling-stroke;
+  transform-origin: center;
+  transition: opacity 150ms ease, transform 200ms var(--ease-out);
+}
+
+.cue-play { fill: currentColor; stroke: none; opacity: 0; transform: scale(0.8); }
+.cue-ring { stroke-dasharray: 2.4 2.2; opacity: 0; }
+
+/* Only over a film's stills; empty, the camera sits there instead. */
+.film:not(:has(.strip li)) .cue,
+.viewfinder.has-started .cue { display: none; }
+
+.viewfinder.is-playable:not(.is-playing) .media { cursor: pointer; }
+
+@media (hover: hover) and (pointer: fine) {
+  .viewfinder.is-playable:not(.is-playing) .media:hover .cue-play { opacity: 1; transform: none; }
+}
+
+.viewfinder.is-loading .cue-play { opacity: 0; }
+.viewfinder.is-loading .cue-ring { opacity: 1; animation: play-turn 1.6s linear infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .viewfinder.is-loading .cue-ring { animation: none; }
+}
+
+/* Caption: the title, then Play with the running time. */
+.caption {
+  grid-area: title;
+  align-self: end;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 20px;
+  min-width: 0;
+}
+
+.play {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  text-transform: inherit;
+  letter-spacing: inherit;
+  pointer-events: auto;
+  transition: transform 160ms var(--ease-out);
+}
+
+.play[hidden],
+.viewfinder.is-playing .play { display: none; }
+.play:active { transform: scale(0.97); }
+
+.play svg {
+  width: 8px;
+  height: 8px;
+  fill: currentColor;
+  align-self: center;
+}
+
+.play-length {
+  color: var(--dim);
+  font-weight: 400;
+}
+
+.play-length:empty { display: none; }
+
+@media (hover: hover) and (pointer: fine) {
+  .play:hover { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+}
+
+@keyframes play-turn {
+  to { transform: rotate(360deg); }
 }
 
 .hud {
@@ -336,7 +433,6 @@ img { display: block; max-width: 100%; }
   font-weight: 700; /* Courier's regular weight thins out over footage */
   display: grid;
   grid-template:
-    "state tc" auto
     ".     ." 1fr
     "title count" auto / minmax(0, 1fr) auto;
   gap: 8px 24px;
@@ -351,31 +447,17 @@ img { display: block; max-width: 100%; }
   .film:not(:has(.strip li)) .media { aspect-ratio: 4 / 5; }
 
   /* Narrow screens let the credit wrap to two lines rather than lose the role. */
-  .viewfinder { grid-template-rows: auto 64px; }
+  .viewfinder { --cap-h: 64px; }
   .hud .title { white-space: normal; }
 }
 
-/* The center crosshair only shows over footage; empty, the camera sits there. */
-.film:not(:has(.strip li)) .hud use[href="#cross"] { display: none; }
-
-.state { grid-area: state; display: inline-flex; align-items: center; gap: 8px; }
-
-.state::before {
-  content: "";
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  border: var(--hair) solid currentColor;
-}
-
-.viewfinder.is-playing .state::before { background: currentColor; }
-
-.tc { grid-area: tc; justify-self: end; }
+/* The film frame has no center crosshair: empty, the camera sits there;
+   with films, the still stays clean. */
+.film .hud use[href="#cross"] { display: none; }
 
 .title {
-  grid-area: title;
-  align-self: end;
   min-width: 0;
+  max-width: 100%;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -410,6 +492,102 @@ img { display: block; max-width: 100%; }
   stroke: currentColor;
   stroke-width: var(--hair);
 }
+
+/* ---------- Player ---------- */
+
+.media > video {
+  opacity: 0;
+  transition: opacity 400ms var(--ease-out);
+  cursor: pointer;
+}
+
+.viewfinder.has-started .media > video { opacity: 1; }
+
+/* Loading: the play ring turns until the first frame arrives. */
+
+/* While a film plays, the transport takes the stills counter's place. */
+.transport {
+  grid-area: count;
+  justify-self: end;
+  align-self: end;
+  display: none;
+  align-items: center;
+  gap: 16px;
+  pointer-events: auto;
+}
+
+.viewfinder.is-playing .count { display: none; }
+.viewfinder.is-playing .transport { display: inline-flex; }
+.viewfinder.is-embed .transport > :not(.t-close) { display: none; }
+
+.transport button {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin: -8px;
+  transition: transform 160ms var(--ease-out);
+}
+
+.transport button:active { transform: scale(0.9); }
+
+.transport svg {
+  width: 10px;
+  height: 10px;
+  overflow: visible;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: var(--hair);
+  stroke-linejoin: round;
+}
+
+.t-play .i-play { fill: currentColor; stroke: none; }
+.viewfinder:not(.is-paused) .t-play .i-play,
+.viewfinder.is-paused .t-play .i-pause,
+.viewfinder:not(.is-muted) .t-mute .i-off,
+.viewfinder.is-muted .t-mute .i-on { display: none; }
+.t-mute path:first-child { fill: currentColor; stroke: none; }
+
+.t-time { white-space: nowrap; }
+
+/* Phones: elapsed time only, so the title keeps its line. */
+@media (max-width: 480px) {
+  .t-total { display: none; }
+}
+
+/* The progress line: a hairline just under the picture, the width of the
+   frame. The thumb shows only when the line is touched. */
+.scrub {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--cap-h) - 14px);
+  z-index: 2;
+  display: none;
+}
+
+.viewfinder.is-playing:not(.is-embed) .scrub { display: block; }
+
+.scrub input { display: block; }
+
+.scrub input::-webkit-slider-thumb { opacity: 0; transition: opacity 150ms ease, transform 160ms var(--ease-out); }
+.scrub input::-moz-range-thumb { opacity: 0; transition: opacity 150ms ease, transform 160ms var(--ease-out); }
+.scrub input:is(:hover, :focus-visible, :active)::-webkit-slider-thumb { opacity: 1; }
+.scrub input:is(:hover, :focus-visible, :active)::-moz-range-thumb { opacity: 1; }
+.scrub input:focus-visible { outline-offset: 2px; }
+
+/* Full screen: the picture fills the screen above the caption row. */
+.viewfinder:fullscreen {
+  width: 100%;
+  height: 100%;
+  grid-template-rows: minmax(0, 1fr) var(--cap-h);
+  padding: 0 20px;
+  background: var(--paper);
+}
+
+.viewfinder:fullscreen .media { aspect-ratio: auto; }
+.viewfinder:fullscreen .scrub { left: 20px; right: 20px; }
+.viewfinder:fullscreen .hud .marks { display: none; }
 
 /* Reel strip, as a lookbook's thumbnails. */
 .strip {
@@ -627,8 +805,10 @@ img { display: block; max-width: 100%; }
   row-gap: 10px;
 }
 
-.length input {
-  grid-column: 1 / -1;
+.length input { grid-column: 1 / -1; }
+
+/* The bio slider and the film's progress line share one control. */
+:is(.length, .scrub) input {
   --fill: 0%;
   appearance: none;
   -webkit-appearance: none;
@@ -641,7 +821,7 @@ img { display: block; max-width: 100%; }
   cursor: pointer;
 }
 
-.length input::-webkit-slider-thumb {
+:is(.length, .scrub) input::-webkit-slider-thumb {
   -webkit-appearance: none;
   width: 14px;
   height: 14px;
@@ -650,7 +830,7 @@ img { display: block; max-width: 100%; }
   transition: transform 160ms var(--ease-out);
 }
 
-.length input::-moz-range-thumb {
+:is(.length, .scrub) input::-moz-range-thumb {
   width: 14px;
   height: 14px;
   border: 0;
@@ -659,8 +839,8 @@ img { display: block; max-width: 100%; }
   transition: transform 160ms var(--ease-out);
 }
 
-.length input:active::-webkit-slider-thumb { transform: scale(1.25); }
-.length input:active::-moz-range-thumb { transform: scale(1.25); }
+:is(.length, .scrub) input:active::-webkit-slider-thumb { transform: scale(1.25); }
+:is(.length, .scrub) input:active::-moz-range-thumb { transform: scale(1.25); }
 
 .length span {
   font-family: var(--serif);

@@ -27,6 +27,7 @@
   let track = resuming ? saved.track : 'calm';
   let muted = resuming && saved.muted === true;
   let unlocked = false;  // playback has started at least once on this page
+  let held = false;      // paused while a film plays (see AVSound below)
 
   const players = {};
   for (const [name, t] of Object.entries(TRACKS)) {
@@ -75,7 +76,7 @@
   const canHover = matchMedia('(hover: hover) and (pointer: fine)');
 
   function render() {
-    const waiting = !muted && !unlocked;
+    const waiting = !muted && !unlocked && !held;
     const t = TRACKS[track];
     const other = otherThan(track);
     sound.dataset.icon = muted ? 'off' : track;
@@ -114,18 +115,18 @@
 
   function apply(fadeIn = SWITCH) {
     for (const [name, audio] of Object.entries(players)) {
-      if (name !== track || muted) {
+      if (name !== track || muted || held) {
         if (!audio.paused) fade(audio, 0, SWITCH, () => audio.pause());
         continue;
       }
       audio.preload = 'auto';
       audio.play().then(() => {
-        if (name !== track || muted) return;
+        if (name !== track || muted || held) return;
         unlocked = true;
         render();
         fade(audio, VOLUME, fadeIn);
       }, () => {
-        if (name === track && !muted && !unlocked) waitForGesture();
+        if (name === track && !muted && !held && !unlocked) waitForGesture();
       });
     }
     render();
@@ -143,7 +144,7 @@
       if (sound.contains(e.target)) return;
       events.forEach((t) => removeEventListener(t, go, true));
       waiting = false;
-      if (!muted && !unlocked) apply(FADE_IN);
+      if (!muted && !held && !unlocked) apply(FADE_IN);
     };
     events.forEach((t) => addEventListener(t, go, true));
   }
@@ -218,6 +219,13 @@
     seek(players[track], s.time);
     apply(RESUME);
   });
+
+  // The film viewer pauses the music while a film plays, then lets it go.
+  // Muting in the meantime still holds once the film stops.
+  window.AVSound = {
+    hold() { held = true; apply(); },
+    release() { if (!held) return; held = false; apply(RESUME); },
+  };
 
   render();
   if (!muted) apply(resuming ? RESUME : FADE_IN);

@@ -37,108 +37,253 @@
   ({ film, design, about, misc })[section]?.();
 
   // ==================== Film ====================
-  // Each <li> in .strip describes one film with data attributes; this builds
-  // its thumbnail and plays it in the viewfinder.
+  // Each <li> in .strip is one film; its <img> tags are the stills. The
+  // viewfinder shows one film's stills, the arrows step through them, and the
+  // strip below switches film. A film with a source gets a play button, and
+  // the background music pauses while it plays.
   function film() {
     const viewfinder = document.querySelector('.viewfinder');
     const media = viewfinder.querySelector('.media');
-    const state = viewfinder.querySelector('.state');
-    const tc = viewfinder.querySelector('.tc');
+    const play = viewfinder.querySelector('.play');
     const title = viewfinder.querySelector('.title');
     const counter = viewfinder.querySelector('.counter');
     const [prev, next] = viewfinder.querySelectorAll('.count button');
-    const items = [...document.querySelectorAll('.strip li')];
 
-    document.querySelector('.datum-count').textContent = pad(items.length);
+    const films = [...document.querySelectorAll('.strip li')].map((li) => {
+      const stills = [...li.querySelectorAll('img')].map((img) => ({ src: img.src, alt: img.alt }));
+      li.replaceChildren();
+      return { li, ...li.dataset, stills };
+    });
 
-    // Timecode at 24 fps from page load. It is a reading, not decoration,
-    // so it runs under reduced motion too.
-    const start = performance.now();
-    let lastFrame = -1;
-    (function tick(now) {
-      if (signal.aborted) return;
-      const f = Math.floor(((now - start) / 1000) * 24);
-      if (f !== lastFrame) {
-        lastFrame = f;
-        tc.textContent = [Math.floor(f / 86400), Math.floor(f / 1440) % 60, Math.floor(f / 24) % 60, f % 24]
-          .map(pad).join(':');
-      }
-      requestAnimationFrame(tick);
-    })(start);
+    document.querySelector('.datum-count').textContent = pad(films.length);
+    prev.disabled = next.disabled = true;
+    if (!films.length) return;
 
-    prev.disabled = next.disabled = items.length < 2;
-    if (!items.length) return;
-
-    for (const [i, li] of items.entries()) {
-      const d = li.dataset;
+    for (const [i, f] of films.entries()) {
       const button = document.createElement('button');
       button.type = 'button';
       button.setAttribute('aria-pressed', 'false');
-      if (d.poster) {
+      if (f.stills[0]) {
         const img = document.createElement('img');
-        img.src = d.poster;
+        img.src = f.stills[0].src;
         img.alt = '';
         img.loading = 'lazy';
         button.appendChild(img);
       }
       const label = document.createElement('span');
       label.className = 'data';
-      label.textContent = [d.title, d.year].filter(Boolean).join(' / ');
+      label.textContent = [f.title, f.year].filter(Boolean).join(' / ');
       button.appendChild(label);
-      button.addEventListener('click', () => show(i));
-      li.appendChild(button);
+      button.addEventListener('click', () => showFilm(i));
+      f.li.appendChild(button);
     }
 
-    let current = -1;
+    let current = null;  // the film on screen
+    let still = 0;
+    let shot = null;     // the still <img> on screen
+    let player = null;   // the <video> or <iframe> while a film plays
+    let token = 0;
 
-    function show(i) {
-      i = (i + items.length) % items.length;
-      if (i === current) return;
-      current = i;
-      const d = items[i].dataset;
-      viewfinder.classList.remove('is-playing');
-      state.textContent = 'Stby';
-      media.replaceChildren(makeMedia(d));
-      title.textContent = [d.title, d.year, d.role].filter(Boolean).join(' / ');
-      counter.textContent = `${pad(i + 1)} / ${pad(items.length)}`;
-      items.forEach((li, k) => li.querySelector('button').setAttribute('aria-pressed', String(k === i)));
+    function showFilm(i) {
+      if (films[i] === current) return;
+      stopFilm();
+      current = films[i];
+      title.textContent = [current.title, current.year, current.role].filter(Boolean).join(' / ');
+      films.forEach((f) => f.li.querySelector('button').setAttribute('aria-pressed', String(f === current)));
+      const playable = !!(current.embed || current.video);
+      play.hidden = !playable;
+      viewfinder.classList.toggle('is-playable', playable);
+      play.setAttribute('aria-label', `Play ${current.title || 'film'}${current.length ? `, ${current.length}` : ''}`);
+      play.querySelector('.play-length').textContent = current.length || '';
+      prev.disabled = next.disabled = current.stills.length < 2;
+      showStill(0, false);
     }
 
-    function makeMedia(d) {
-      if (d.embed) {
-        const frame = document.createElement('iframe');
-        frame.src = d.embed;
-        frame.title = d.title || 'Film';
-        frame.allow = 'autoplay; fullscreen; picture-in-picture';
-        frame.allowFullscreen = true;
-        return frame;
+    // Clicks cross-fade through a light blur; keyboard steps swap instantly.
+    function showStill(k, animate) {
+      const { stills } = current;
+      if (!stills.length) {
+        shot?.remove();
+        shot = null;
+        counter.textContent = '00 / 00';
+        return;
       }
-      if (d.video) {
-        const video = document.createElement('video');
-        video.src = d.video;
-        if (d.poster) video.poster = d.poster;
-        video.controls = true;
-        video.playsInline = true;
-        video.addEventListener('play', () => { viewfinder.classList.add('is-playing'); state.textContent = 'Play'; });
-        video.addEventListener('pause', () => { viewfinder.classList.remove('is-playing'); state.textContent = 'Stby'; });
-        return video;
-      }
-      const img = document.createElement('img');
-      img.src = d.poster;
-      img.alt = d.title || '';
-      return img;
+      still = (k + stills.length) % stills.length;
+      counter.textContent = `${pad(still + 1)} / ${pad(stills.length)}`;
+      const mine = ++token;
+      const img = new Image();
+      img.className = 'shot';
+      img.src = stills[still].src;
+      img.alt = stills[still].alt;
+      img.decode().catch(() => {}).then(() => {
+        if (mine !== token || signal.aborted) return;
+        const old = shot;
+        shot = img;
+        if (!animate || reduceMotion.matches) {
+          old?.remove();
+          media.prepend(img);
+          return;
+        }
+        img.classList.add('is-entering');
+        media.prepend(img);
+        if (old) media.prepend(old);  // keep the new still on top
+        requestAnimationFrame(() => requestAnimationFrame(() => img.classList.remove('is-entering')));
+        setTimeout(() => old?.remove(), 260);
+      });
     }
 
-    prev.addEventListener('click', () => show(current - 1));
-    next.addEventListener('click', () => show(current + 1));
-    // Keyboard stepping swaps instantly, with no animation.
-    document.addEventListener('keydown', (e) => {
-      if (e.target.closest('input, textarea, video, iframe')) return;
-      if (e.key === 'ArrowLeft') show(current - 1);
-      if (e.key === 'ArrowRight') show(current + 1);
+    // ---------- Player ----------
+    // Video files play in our own player: the progress line under the
+    // picture and the transport in place of the stills counter. Embeds
+    // (YouTube, Vimeo) bring their own controls; only "close" is ours.
+    const scrub = viewfinder.querySelector('.scrub input');
+    const tPlay = viewfinder.querySelector('.t-play');
+    const tNow = viewfinder.querySelector('.t-now');
+    const tTotal = viewfinder.querySelector('.t-total');
+    const tMute = viewfinder.querySelector('.t-mute');
+    const tFull = viewfinder.querySelector('.t-full');
+    const tClose = viewfinder.querySelector('.t-close');
+    const clock = (sec) => {
+      const t = Math.max(0, Math.floor(sec || 0));
+      return `${pad(Math.floor(t / 60))}:${pad(t % 60)}`;
+    };
+    let scrubbing = false;
+
+    function playFilm() {
+      if (!current || player || !(current.embed || current.video)) return;
+      window.AVSound?.hold();
+      viewfinder.classList.add('is-playing');
+
+      if (current.embed) {
+        player = document.createElement('iframe');
+        const url = new URL(current.embed, location.href);
+        url.searchParams.set('autoplay', '1');
+        player.src = url.href;
+        player.title = current.title || 'Film';
+        player.allow = 'autoplay; fullscreen; picture-in-picture';
+        player.allowFullscreen = true;
+        viewfinder.classList.add('is-embed');
+        media.appendChild(player);
+        play.hidden = true;
+        return;
+      }
+
+      // The still stays up, with the center ring turning, until the first
+      // frame is ready; then the film fades in over it.
+      const video = player = document.createElement('video');
+      video.src = current.video;
+      video.playsInline = true;
+      video.preload = 'auto';
+      video.addEventListener('playing', () => {
+        viewfinder.classList.remove('is-loading');
+        viewfinder.classList.add('has-started');
+        play.hidden = true;
+      });
+      video.addEventListener('play', renderTransport);
+      video.addEventListener('pause', renderTransport);
+      video.addEventListener('volumechange', renderTransport);
+      video.addEventListener('loadedmetadata', renderTransport);
+      video.addEventListener('timeupdate', renderTransport);
+      video.addEventListener('ended', stopFilm);
+      video.addEventListener('click', () => (video.paused ? video.play() : video.pause()));
+      media.appendChild(video);
+      viewfinder.classList.add('is-loading');
+      video.play().catch(() => {
+        viewfinder.classList.remove('is-loading');
+        renderTransport();
+      });
+      renderTransport();
+    }
+
+    function renderTransport() {
+      if (!(player instanceof HTMLVideoElement)) return;
+      const { currentTime, duration, paused, muted } = player;
+      const total = Number.isFinite(duration) ? duration : 0;
+      viewfinder.classList.toggle('is-paused', paused);
+      tPlay.setAttribute('aria-label', paused ? 'Play' : 'Pause');
+      tMute.setAttribute('aria-label', muted ? 'Unmute film' : 'Mute film');
+      viewfinder.classList.toggle('is-muted', muted);
+      tNow.textContent = clock(currentTime);
+      tTotal.textContent = ` / ${clock(total)}`;
+      if (!scrubbing) {
+        scrub.max = Math.floor(total);
+        scrub.value = Math.floor(currentTime);
+      }
+      scrub.style.setProperty('--fill', `${total ? (currentTime / total) * 100 : 0}%`);
+      scrub.setAttribute('aria-valuetext', `${clock(currentTime)} of ${clock(total)}`);
+    }
+
+    function stopFilm() {
+      if (!player) return;
+      if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+      player.remove();
+      player = null;
+      scrubbing = false;
+      viewfinder.classList.remove('is-playing', 'is-embed', 'is-loading', 'has-started', 'is-paused', 'is-muted');
+      play.hidden = !(current.embed || current.video);
+      window.AVSound?.release();
+    }
+
+    const togglePlay = () => {
+      if (player instanceof HTMLVideoElement) player.paused ? player.play() : player.pause();
+    };
+    const seekBy = (sec) => {
+      if (player instanceof HTMLVideoElement) player.currentTime = Math.max(0, Math.min(player.duration || 0, player.currentTime + sec));
+    };
+
+    tPlay.addEventListener('click', togglePlay);
+    tMute.addEventListener('click', () => { if (player instanceof HTMLVideoElement) player.muted = !player.muted; });
+    tClose.addEventListener('click', stopFilm);
+
+    // Full screen takes the whole viewfinder, so our controls come along.
+    // iPhone only lets the video itself go full screen, with its own controls.
+    tFull.addEventListener('click', () => {
+      if (document.fullscreenElement) return void document.exitFullscreen();
+      if (viewfinder.requestFullscreen) viewfinder.requestFullscreen().catch(() => {});
+      else player?.webkitEnterFullscreen?.();
+    });
+    document.addEventListener('fullscreenchange', () => {
+      tFull.setAttribute('aria-label', document.fullscreenElement ? 'Exit full screen' : 'Full screen');
     }, { signal });
 
-    show(0);
+    scrub.addEventListener('pointerdown', () => { scrubbing = true; });
+    scrub.addEventListener('input', () => {
+      if (!(player instanceof HTMLVideoElement)) return;
+      player.currentTime = Number(scrub.value);
+      renderTransport();
+    });
+    for (const type of ['change', 'pointerup', 'pointercancel']) scrub.addEventListener(type, () => { scrubbing = false; });
+
+    play.addEventListener('click', playFilm);
+    // The still itself is a play button too; once playing, clicks belong
+    // to the video.
+    media.addEventListener('click', () => { if (!player) playFilm(); });
+
+    const step = (by, animate) => {
+      if (!current || current.stills.length < 2) return;
+      stopFilm();
+      showStill(still + by, animate);
+    };
+
+    prev.addEventListener('click', () => step(-1, true));
+    next.addEventListener('click', () => step(1, true));
+    // Keys: arrows step stills, or seek 5s while a film plays; space pauses.
+    // On the progress line itself, the arrows are the slider's own.
+    document.addEventListener('keydown', (e) => {
+      if (e.target.closest('textarea, iframe')) return;
+      if (e.target.closest('input') && e.target !== scrub) return;
+      const playing = player instanceof HTMLVideoElement;
+      const onScrub = e.target === scrub;
+      if (e.key === 'ArrowLeft' && !onScrub) playing ? seekBy(-5) : step(-1, false);
+      else if (e.key === 'ArrowRight' && !onScrub) playing ? seekBy(5) : step(1, false);
+      else if (e.key === ' ' && playing && !e.target.closest('button, a')) { e.preventDefault(); togglePlay(); }
+      else if (e.key === 'Escape' && !document.fullscreenElement) stopFilm();
+    }, { signal });
+
+    // Leaving the page mid-film brings the music back.
+    signal.addEventListener('abort', stopFilm);
+
+    showFilm(0);
   }
 
   // ==================== Design ====================
